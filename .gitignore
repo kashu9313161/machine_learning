@@ -1,0 +1,13 @@
+# Dataset files
+*.csv
+*.xlsx
+*.xls
+*.json
+*.parquet
+*.feather
+*.h5
+*.db
+
+# Dataset directories
+data/
+ml/**/dataset/

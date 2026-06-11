@@ -1,0 +1,40 @@
+# Core Data Science
+numpy
+pandas
+
+# Visualization
+matplotlib
+seaborn
+plotly
+
+# Machine Learning
+scikit-learn
+scipy
+statsmodels
+
+# Gradient Boosting
+xgboost
+lightgbm
+catboost
+
+# Jupyter
+jupyter
+notebook
+ipykernel
+
+# Utilities
+joblib
+tqdm
+
+# File Handling
+openpyxl
+xlrd
+
+# Model Explainability
+shap
+
+# Hyperparameter Tuning
+optuna
+
+# Testing
+pytest
