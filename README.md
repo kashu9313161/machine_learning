@@ -301,3 +301,4 @@ Infrastructure Safety: Setting up automatic database backup points, error-handli
 Concept Drift Mitigation: Real-world patterns naturally shift over time, which causes static historical models to steadily decay—a phenomenon known as Model Rotting.
 
 The Retraining Loop: Combat model rotting by engineering automated automated pipelines that periodically collect fresh user data logs, combine them with past assets, and retrain the system from scratch to keep predictions fresh and accurate.
+
