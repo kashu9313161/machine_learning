@@ -302,3 +302,88 @@ Concept Drift Mitigation: Real-world patterns naturally shift over time, which c
 
 The Retraining Loop: Combat model rotting by engineering automated automated pipelines that periodically collect fresh user data logs, combine them with past assets, and retrain the system from scratch to keep predictions fresh and accurate.
 
+## Most Important HTTP Status Codes
+1xx → Information
+
+2xx → Success
+       200 OK
+
+3xx → Redirection / Go Somewhere Else
+       301 -Permanent Redirect
+       302
+
+4xx → Client Error / Your Mistake
+       400 - Bad Request
+       401 - Unauthorized
+       403 - Forbidden
+       404 - Not Found
+
+5xx → Server Error / Server Mistake
+       500 - Internal Server Error
+       503 - Service Unavailable
+       502, 504
+
+### EDA(Exploratory Data Analysis) - it is used for analysing, summerizing, visualizing and understanding a dataset
+## Types of EDA - 1> Univarient Analysis , 2> Bivarient Analysis, 3> Multivarient Analysis
+
+1. What is Univariate Analysis?
+    Univariate analysis is the process of analyzing a single variable (column) at a time independently of other variables in the dataset.
+    - Univariate: Analyzing 1 column to map its frequency, spread, or shape.
+    - Bivariate: Analyzing 2 columns simultaneously to find correlations.
+    - Multivariate: Analyzing more than 2 columns together to discover complex trends.
+
+📂 1. Univariate Analysis on Categorical Data
+    Categorical columns contain distinct text strings, discrete categories, or labels (e.g., Gender, Titanic Pclass, or station Embarked). To analyze these, look at how frequently each category appears.
+
+1. Count Plot (Bar Chart)
+    A Count Plot maps the distinct category names on the X-axis and plots their absolute occurrence count (frequency) on the Y-axis.
+    
+    > import seaborn as sns
+    >  sns.countplot(df['Survived'])
+
+- Titanic Insight: Running a count plot on the Survived column immediately surfaces that more than 500 passengers died (0), while fewer than 400 survived (1).
+2. Pie ChartIf you want to view the proportional distribution of classes in percentages rather than absolute raw values, use a Pie Chart.
+
+    > df['Pclass'].value_counts().plot(kind='pie', autopct='%0.2f%%')
+
+- Titanic Insight: Instantly visualizes that roughly 55% of passengers traveled in 3rd class (Pclass=3), compared to smaller shares in 1st and 2nd class.
+
+📐 2. Univariate Analysis on Numerical Data
+Numerical variables contain continuous values (e.g., Age, ticket Fare). Because numbers are continuous, they must be grouped into intervals or analyzed using statistical spreads.
+1. Histograms
+    - A Histogram breaks the entire numeric span down into custom equal intervals called bins (e.g., grouping age down into bands like 0-10, 10-20, 20-30) and plots the volume of entries falling within each bin.
+
+    > import matplotlib.pyplot as plt
+    > plt.hist(df['Age'], bins=10)
+
+- Titanic Insight: Surfaces that the vast majority of passengers on board were aged between 18 and 40, while very young infants or elderly passengers were sparse.
+2. Distplot / KDE (Kernel Density Estimate)
+    -A Distplot generates a smooth line over the histogram bins called the Probability Density Function (PDF).
+
+    >sns.distplot(df['Age'])
+    ## others like this
+    - histplot + KDE = axes-level function for histogram
+    > sns.histplot(df[' '], kde = True)
+
+* Understanding PDF: The Y-axis represents probability density rather than a raw count. This curve allows you to determine the likelihood of picking a random row at a specific value (e.g., evaluating the probability of a passenger being exactly 40 years old)
+* Skewness: This visualization also checks if your data shape is symmetric (Normal Distribution) or shifted to one side (Skewed).
+
+3. Box Plot (Five-Number Summary)
+    - A Box Plot gives a summary of the data using five key statistics:
+        - Minimum Boundary: Calculated as $Q1 - 1.5 * IQR$
+        - 25th Percentile ($Q1$): 25% of values fall below this point.
+        - Median (50th Percentile): The true midpoint value of sorted data.
+        - 75th Percentile ($Q3$): 75% of values fall below this point.
+        - Maximum Boundary: Calculated as $Q3 + 1.5 * IQR
+            
+            {Interquartile Range (IQR)} = Q3 - Q1
+        >sns.boxplot(df['Fare'])
+
+     Outliers           Minimum       Q1       Median       Q3       Maximum        Outliers
+        o                ├─────────────▒▒▒▒▒▒▒▒▒▒▓▒▒▒▒▒▒▒▒▒▒▒▒───────────┤                o o o
+                                       ▲         ▲          ▲
+                                       │         │          │
+                                       Q1      Median       Q3
+
+- Outlier Detection: Any actual data values that fall completely outside the calculated Minimum or Maximum whiskers are explicitly plotted as individual dots. These represent outliers (extreme data anomalies).
+- Titanic Insight: A box plot on the Fare column reveals extreme anomalies, including passengers who paid over $500—drastically higher than the baseline average.
