@@ -387,3 +387,47 @@ Numerical variables contain continuous values (e.g., Age, ticket Fare). Because 
 
 - Outlier Detection: Any actual data values that fall completely outside the calculated Minimum or Maximum whiskers are explicitly plotted as individual dots. These represent outliers (extreme data anomalies).
 - Titanic Insight: A box plot on the Fare column reveals extreme anomalies, including passengers who paid over $500—drastically higher than the baseline average.
+
+👥 1. Bivariate Analysis (Two Variables)
+This looks at the relationship between exactly two columns. The approach depends entirely on what kind of data those columns hold:
+
+A. Numerical vs. Numerical (Numbers to Numbers)
+The Goal: You want to see if one number goes up when the other goes up, or if they have no pattern at all.
+
+The Tool: Scatter Plots. If you plot a restaurant bill on the X-axis and the tip on the Y-axis, you will likely see a diagonal line going up—showing a linear relationship.
+
+Alternative Tool: Line Plots. Use these specifically when your X-axis represents time (e.g., tracking stock price changes over months).
+
+B. Numerical vs. Categorical (Numbers to Groups)
+The Goal: You want to compare a metric across different distinct groups (e.g., comparing the average age of passengers across 1st, 2nd, and 3rd class).
+
+The Tools: * Bar Plots: Great for seeing the raw average or total value per group.
+
+Box Plots: Show you the spread of the data, the median, and if there are any weird extreme values (outliers) in specific groups.
+
+KDE / Distribution Plots: Overlaying probability curves for each group. For instance, plotting the age distribution of people who survived vs. those who didn't can reveal if children had a higher survival rate.
+
+C. Categorical vs. Categorical (Groups to Groups)
+The Goal: You want to see how two distinct group columns overlap (e.g., counting how many men vs. women were in each passenger class).
+
+The Tool: Cross-tabulations (a text grid of counts) passed into a Heatmap. A heatmap turns those numbers into color shades, letting your eyes instantly spot high-density combinations (like seeing a dark, heavy color block where "3rd Class" and "Casualties" intersect).
+
+🌀 2. Multivariate Analysis (Three or More Variables)
+Real-world problems usually involve many factors at once. Multivariate analysis allows you to pack extra dimensions of information into your graphs.
+
+Hue (Color Encoding): You can take a standard 2D Scatter Plot (like height vs. weight) and color-code the dots by gender. Now you are tracking three variables at once.
+
+Size & Style (Markers): You can make the scatter plot dots larger or smaller based on another metric (like age), or change the dots to crosses based on another category.
+
+Pair Plots: If you have 5 different numerical columns and want to see how every single one relates to the others, a Pair Plot automatically builds a massive grid of scatter plots for every possible combination in one command.
+
+Cluster Maps: These take a complex data grid, analyze which rows and columns behave similarly, and automatically rearrange them so similar groups are clustered together visually using hierarchical tree structures (dendrograms).
+
+🎯 Summary Rule of Thumb
+Want to find trends between numbers? Use Scatter/Line plots.
+
+Want to compare groups against a metric? Use Bar/Box/Distribution plots.
+
+Want to map out group overlaps? Use Heatmaps/Cross-tabs.
+
+Want to see everything at once? Expand your plots using colors (hue), sizes, or a PairPlot.
