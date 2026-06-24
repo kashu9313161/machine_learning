@@ -479,3 +479,91 @@ Gradient Descent-Based Models: Linear Regression,
 Logistic Regression, Neural Networks, and
 deep learning engines. It prevents weight divergence and
 allows faster mathematical convergence.
+
+### 📌 What is Normalization?
+Normalization is a feature scaling technique used during the data preparation phase of machine learning. Its primary goal is to change the values of numeric columns in a dataset to use a common standard scale without distorting the underlying differences in the ranges of values.
+
+In practical terms, it strips the "units" (like grams, kilometers, or dollars) away from raw numbers so the machine learning model can evaluate data purely by its mathematical magnitude, preventing columns with large numbers from unfairly dominating the algorithms.
+
+🔬 Types of Normalization
+The instructor breaks down Normalization into 4 key types:
+
+1. Min-Max Scaling (The Most Common)
+Whenever someone simply says "Normalization," they are typically referring to Min-Max Scaling. It is used 90% of the time among the normalization techniques.
+
+The Formula: (X - X_min) / (X_max - X_min)
+
+> class = .MinMaxScaler 
+
+The Effect: It compresses (or stretches) all data values strictly into a range between 0 and 1. The minimum value becomes exactly 0, and the maximum value becomes exactly 1.
+
+Geometrical Intuition: Imagine picking up a giant scattered cloud of data points and forcing them to fit perfectly inside a 1x1 unit square (or a unit cube for 3D data).
+
+When to Use: It is highly recommended when you already know the absolute minimum and maximum possible values of your data beforehand (e.g., Image Processing, where RGB pixel values will always range from exactly 0 to 255).
+
+2. Mean Normalization
+The Formula: (X - X_mean) / (X_max - X_min)
+
+The Effect: This shifts the entire data distribution so that the mean (average) lands precisely on 0. The values generally range between -1 and 1.
+
+Usage: It is rarely used because Standardization (Z-score) does the job of mean-centering much better. Scikit-learn doesn't even have a direct, built-in class for it.
+
+3. Max Absolute Scaling
+The Formula: X / absolute(X_max)
+
+The Effect: It simply divides every number by the absolute maximum value present in the column.
+
+Usage: This is primarily used when dealing with Sparse Data (datasets that have an overwhelming amount of 0s).
+
+4. Robust Scaling (The Outlier Handler)
+The Formula: (X - X_median) / IQR (where IQR is the Interquartile Range: 75th percentile - 25th percentile).
+
+Usage: Min-Max scaling is easily broken by massive extreme outliers. Robust Scaling uses the median and IQR (which are statistically immune to outliers) to scale the data. It is the go-to technique if your dataset is riddled with heavy outliers.
+
+⚖️ Normalization vs. Standardization
+The video concludes with practical advice on when to use which scaling technique:
+
+Do you even need scaling? Tree-based algorithms (like Random Forest or Decision Trees) don't need scaling at all. Don't waste time scaling if you are strictly using those.
+
+When in doubt, use Standardization: Standardization (Z-score scaling) yields better results in the majority of real-world machine learning problems.
+
+Use Normalization (Min-Max) specifically when: You have a strict boundary of known maximum and minimum values (like Image Pixels or Neural Network bounds).
+
+Experiment! Because it doesn't take much computing power, try passing your data through different scalers and see which one outputs the highest model accuracy. Machine learning relies heavily on experimentation.
+
+📌Machine learning algorithms expect numerical inputs and cannot natively process string-based categorical data.
+
+### The two main types of categorical data and the specific techniques used to handle them.
+
+## Types of Categorical Data
+    - Nominal Data: Categories with no inherent order or relationship (e.g., states like "Karnataka" vs. "Maharashtra", or engineering branches).
+
+    - Ordinal Data: Categories that have an inherent order, ranking, or relationship (e.g., educational degrees like High School < Undergrad < Postgrad, or reviews like Poor < Average < Good).
+
+🛠️ The Two Main Encoding Techniques
+The video covers two specific scikit-learn encoding classes designed for ordinal data mapping. (Nominal data encoding, known as One-Hot Encoding, is reserved for the next video).
+
+1. Ordinal Encoding (OrdinalEncoder)
+Purpose: Used strictly for transforming input features (the independent variables, X) that contain ordinal data.
+
+How it Works: It assigns an integer to each category based on its rank. For example, Poor = 0, Average = 1, and Good = 2.
+
+Implementation Note: When initializing the OrdinalEncoder object, it is highly recommended to pass a list specifying the exact hierarchical order using the categories parameter. If you do not specify the order, scikit-learn will assign numbers randomly, which destroys the mathematical logic of the ordinal data.
+
+2. Label Encoding (LabelEncoder)
+Purpose: Used strictly for transforming the target variable (the dependent output column, y). It is primarily used in classification problems where the output is categorical (e.g., predicting "Yes" or "No").
+
+How it Works: Similar to Ordinal Encoding, it converts classes into integers (0, 1, 2...). However, unlike Ordinal Encoding, you cannot manually pass a ranked order.
+
+Crucial Best Practice: The instructor explicitly notes a common mistake data scientists make: using LabelEncoder on input variables (X). According to official documentation, LabelEncoder must only be used for the target output variable (y), while OrdinalEncoder handles the inputs.
+
+💻 Workflow Demonstration
+The instructor demonstrates the workflow using a sample dataset containing Age, Gender, Review, Education, and Purchased status:
+
+Train-Test Split: Always separate data into X_train, X_test, y_train, and y_test before encoding.
+
+Fit on Train: Call .fit() strictly on the training data so the encoder learns the mapping rules.
+
+Transform Both: Apply .transform() to both the training sets and testing sets to convert the string categories into numbers.
+
+(Note: The instructor briefly mentions ColumnTransformer as the ultimate tool for handling multiple column encodings simultaneously, which he plans to cover in a future video.)
