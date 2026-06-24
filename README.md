@@ -431,3 +431,51 @@ Want to compare groups against a metric? Use Bar/Box/Distribution plots.
 Want to map out group overlaps? Use Heatmaps/Cross-tabs.
 
 Want to see everything at once? Expand your plots using colors (hue), sizes, or a PairPlot.
+
+🔬 Deep-Dive into Standardization (Z-score Normalization)
+    Standardization mathematically transforms data distributions to have a mean (µ) of 0 and a standard deviation ( σ ) of 1.
+
+## The Formula
+    Every raw observation value (xi) is scaled into a standardized value (xi') using the equation:
+    
+        xi' = {xi - µ}
+              --------
+               ( σ )
+
+    Where:µ is the average (mean) of all values in that specific feature column.
+         :σ is the standard deviation of that column.
+Geometrical Intuition
+    Geometrically, standardization performs two vital shifts on your data points:
+    
+1. Mean Centering: It shifts the entire raw data cluster across the coordinate system so that the center of the distribution aligns exactly with the origin (0,0).
+2. Scaling by Variance: It stretches or squashes the distribution tightly along the axis so that the unit spread equals exactly 1.
+
+Crucial takeaway: Standardization only scales data; it does not alter the structural shape of the distribution. A normal distribution or skewed distribution will retain its identical visual curve shape before and after scaling.
+
+⚙️ Coding Implementation & WorkflowThe instructor demonstrates the implementation via Python's scikit-learn using StandardScaler:
+1. Split Data First: Always run train_test_split before scaling to avoid data leakage from your test set into your training cycles.
+2. Fit on Training Data Only: Use .fit(X_train) to extract the mean and standard deviation from the training array.
+3. Transform Both Sets: Apply .transform(X_train) and .transform(X_test) to scale down both arrays based on the parameters calculated from the training data alone.
+
+### Impact on OutliersThe code demonstration proves that standardization does not reduce or fix the impact of outliers. Extreme statistical anomalies will map out as outliers even after scaling. Practitioners must handle outliers independently if they skew linear metrics.
+
+Experimental Results (The Scaling Impact)
+The video runs an empirical comparison testing a Logistic Regression model:
+    - Without Scaling: Accuracy was 65%.
+    - With Scaling (Standardized Data): Accuracy increased to 86%.
+
+## ⚖️ When to Use vs. Skip Standardization
+
+Use Standardization For 🚀                                      Skip Standardization For 🚫
+__________________________________________________________________________________________________________________________
+Distance-Based Algorithms: K-Nearest Neighbors (KNN),            Tree-Based Algorithms: Decision Trees, Random Forests,
+K-Means Clustering, and Support Vector Machines (SVM).           Gradient Boosting, AdaBoost, and XGBoost.
+__________________________________________________________________________________________________________________________
+Matrix Factorization: Principal Component Analysis (PCA),        Why? Tree algorithms use conditional item splits       
+where tracking maximum directional variance requires mean        (e.g., Age > 30), which rely on hierarchical order rather than 
+centering.                                                       mathematical distance or weight optimizations.
+
+Gradient Descent-Based Models: Linear Regression,
+Logistic Regression, Neural Networks, and
+deep learning engines. It prevents weight divergence and
+allows faster mathematical convergence.
