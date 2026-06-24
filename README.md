@@ -79,10 +79,10 @@ Batch Machine Learning (commonly called Offline Learning) is the traditional tra
 
 The Operational Workflow
 
-                    Initial Model
+                    Initial Model           
                         │
                         ▼
-                    New Data Arrives
+                    New Data Arrives            
                         │
                         ▼
                     Update Model
