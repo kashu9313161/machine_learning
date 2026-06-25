@@ -567,3 +567,28 @@ Fit on Train: Call .fit() strictly on the training data so the encoder learns th
 Transform Both: Apply .transform() to both the training sets and testing sets to convert the string categories into numbers.
 
 (Note: The instructor briefly mentions ColumnTransformer as the ultimate tool for handling multiple column encodings simultaneously, which he plans to cover in a future video.)
+
+🛠️ How One Hot Encoding Works
+    If you have a column with $N$ unique categories, OHE creates $N$ brand new individual columns.
+    - Example: For a "Color" column with Yellow, Blue, and Red, OHE creates three new columns: Color_Yellow, Color_Blue, and Color_Red.
+    - If a data row represents "Blue", the Color_Blue column gets a 1, and the other two columns get a 0. This turns the categories into a binary vector (e.g., 0 1 0).
+    
+- The Dummy Variable Trap & Multicollinearity
+    When OHE creates these new columns (known as dummy variables), it introduces a mathematical problem called Multicollinearity. Because the sum of the dummy variables will always equal 1, the variables become highly dependent on each other, which can severely break linear machine learning models (like Linear Regression or Logistic Regression).
+        - The Solution: You must always drop the first column. If you have $N$ categories, you keep $N - 1$ columns. For example, if you drop Color_Yellow, the model can still deduce that a row is Yellow if both Color_Blue and Color_Red are 0.
+        
+💻 Implementation Walkthrough
+    The instructor demonstrates two ways to implement OHE using a real-world Used Cars dataset:
+1. Using Pandas (pd.get_dummies)
+    - You can quickly encode data using pd.get_dummies(data, columns=['Fuel', 'Owner']).
+    - To avoid the Dummy Variable Trap, you pass the parameter drop_first=True.
+    - Drawback: While easy for data analysis, Pandas get_dummies is not recommended for actual Machine Learning projects because it does not memorize the position of the columns for when you need to transform new, unseen testing data later.
+2. Using Scikit-Learn (OneHotEncoder)
+    - This is the industry-standard method for ML pipelines.
+    - You import OneHotEncoder from sklearn.preprocessing.
+    - You instantiate the object and pass drop='first' to handle multicollinearity, and sparse=False to return a clean NumPy array       instead of a sparse matrix.
+    - The challenge: Scikit-learn's OHE only transforms the specific columns you feed it, leaving the rest of the dataset behind. The instructor had to write clunky code to merge the newly encoded array back with the untouched columns (like 'Brand' and 'Kilometers_Driven'). He notes that this headache will be completely solved in the next video using ColumnTransformer.
+
+🚗 Handling High Cardinality (Too Many Categories)
+    What if your column has too many categories? (e.g., a "Car Brand" column with 40 different brands). If you use standard OHE, you will create 40 new columns, bloating the dataset and slowing down the model (the Curse of Dimensionality).
+    - The Solution: The instructor demonstrates a technique to group rare categories. He writes a script to find all car brands that have fewer than 100 cars in the dataset (like Jaguar, Volvo, Datsun) and lumps them all together into a brand new, single category called "Uncommon" (or "Others"). This successfully reduces the column count from 40 down to a much more manageable 12.
