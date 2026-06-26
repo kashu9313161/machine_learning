@@ -592,3 +592,51 @@ Transform Both: Apply .transform() to both the training sets and testing sets to
 🚗 Handling High Cardinality (Too Many Categories)
     What if your column has too many categories? (e.g., a "Car Brand" column with 40 different brands). If you use standard OHE, you will create 40 new columns, bloating the dataset and slowing down the model (the Curse of Dimensionality).
     - The Solution: The instructor demonstrates a technique to group rare categories. He writes a script to find all car brands that have fewer than 100 cars in the dataset (like Jaguar, Volvo, Datsun) and lumps them all together into a brand new, single category called "Uncommon" (or "Others"). This successfully reduces the column count from 40 down to a much more manageable 12.
+
+ColumnTransformer, explained as simply as possible.
+
+Think of your dataset like preparing a complex meal in a kitchen. You wouldn’t treat all your ingredients the exact same way, right? You might chop the vegetables, marinate the meat, and boil the pasta.
+
+In machine learning, your dataset's columns are your ingredients. You rarely want to apply the same preprocessing step to every single column.
+
+The Headache (Before ColumnTransformer)
+Let's say you have a dataset with three types of information:
+
+Age (Numbers) -> Needs to be scaled so large numbers don't dominate your model.
+
+City (Text/Categories like "New York", "London") -> Needs to be converted into numbers (One-Hot Encoding).
+
+Income (Missing some values) -> Needs the blanks filled in (Imputation).
+
+Before ColumnTransformer, you had to manually slice your dataset into three separate pieces, apply the specific mathematical transformation to each piece, and then painstakingly glue (concatenate) the arrays back together. It was messy code, hard to read, and a nightmare to manage if you wanted to test your model on new data.
+
+The Magic (Enter ColumnTransformer)
+ColumnTransformer is essentially an executive chef for your dataset. You hand it a list of instructions, and it handles all the sorting, transforming, and recombining behind the scenes.
+
+You just give it a list of "rules" structured like this:
+(Name of step, Transformer to use, Columns to apply it to)
+
+- A Quick Example in Code:
+
+>from sklearn.compose import ColumnTransformer
+>from sklearn.preprocessing import StandardScaler, OneHotEncoder
+>from sklearn.impute import SimpleImputer
+
+# We tell the ColumnTransformer exactly what to do with each column
+>preprocessor = ColumnTransformer(
+>    transformers=[
+>        ('fill_missing', SimpleImputer(strategy='mean'), ['Income']), # Fill blanks in Income
+>        ('scale_numbers', StandardScaler(), ['Age']),                 # Scale the Age column
+>        ('encode_text', OneHotEncoder(), ['City'])                    # Turn City into numbers
+>    ],
+>    remainder='passthrough' # Leave any other columns we didn't mention alone!
+>)
+
+# Apply it all at once!
+processed_data = preprocessor.fit_transform(raw_data)
+Why it's a Game Changer
+Zero Data Leakage: It ensures that transformations applied to your training data are perfectly replicated on your testing data without accidentally mixing information.
+
+Fewer Bugs: You don't have to worry about index mismatches or concatenating arrays in the wrong order.
+
+Pipeline Friendly: It plugs perfectly into Scikit-Learn Pipelines, meaning you can bundle your entire preprocessing phase and your machine learning model into one single, clean object.
