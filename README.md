@@ -757,3 +757,365 @@ Always check your data with a QQ Plot first. If it's right-skewed (like money or
     In Python, this is implemented using the PowerTransformer class from the sklearn.preprocessing module.
     - Default Behavior: By default, Scikit-Learn's PowerTransformer uses the Yeo-Johnson method and automatically applies zero-mean, unit-variance standardization to the output.
     - Process: When you call .fit(), the transformer calculates the optimal lambda for every column. When you call .transform(), it applies those unique powers to reshape the data.
+
+## Discretization(Binning) and Binarization
+    
+1. Discretization (Binning)
+    - Binning involves dividing a continuous numerical range into discrete intervals (bins). The video covers three main unsupervised binning strategies implemented via Scikit-Learn's KBinsDiscretizer:
+        * Uniform (Equal Width) Binning: Divides the entire data range into N bins of exactly the same width (e.g., ages 0-10, 10-20, 20-30). While simple and good for handling extreme outliers, it doesn't change the underlying spread/shape of the data.
+        * Quantile (Equal Frequency) Binning: Divides the data into N bins such that each bin contains the exact same number of data points (e.g., each bin holds 10% of the population). This is the most commonly used method because it forces skewed data into a uniform distribution.
+        * K-Means Binning: Uses the K-Means clustering algorithm to group values into N clusters based on their proximity. This is specifically useful when the original data is grouped in distinct clusters separated by empty gaps.
+    
+>> from sklearn.preprocessing import KBinsDiscretizer
+   # Create the object
+>> kbin = KBinsDiscretizer(n_bins=10, strategy='quantile', encode='ordinal')
+        >>n_bins: The number of intervals (bins) you want to create (e.g., 10).
+        >>strategy: This tells Scikit-Learn how to calculate the bin edges. You have three options:
+        >>'uniform': (Equal Width) Every bin has the exact same numeric width.
+        >>'quantile': (Equal Frequency) Every bin contains the exact same number of data points. (This is usually the default and most effective choice).
+        >>'kmeans': Uses K-Means clustering to naturally group data into clusters.
+        >>encode: This tells Scikit-Learn how to output the final result.
+        >>'ordinal': Simply replaces the original number with the bin's index number (e.g., it falls in bin 0, bin 1, bin 2...).
+        >>'onehot': Performs One-Hot Encoding on the bins, creating a new column for every single bin (useful for linear models).
+        >> To apply it: You simply call kbin.fit_transform(X_train) on your data!
+
+2. Binarization
+    - Binarization is a special, simplified case of binning where continuous numerical data is converted strictly into binary values (0 or 1) based on a specific threshold.
+
+    * How it works: You define a threshold. Any value below or equal to the threshold becomes 0, and any value above the threshold becomes 1.
+
+    * Use Cases: Often used in image processing (converting a color image to pure black and white) or converting a numerical value into a simple Yes/No flag (e.g., converting "Number of family members aboard = 3" into "Is traveling alone? = 0"). This is implemented using Scikit-Learn's Binarizer class.
+
+    * The instructor demonstrates these techniques on the Titanic dataset, showing how KBinsDiscretizer and Binarizer can transform numerical columns like 'Age', 'Fare', and 'Family Size' into bins or flags before feeding them into a Decision Tree model.
+
+>>from sklearn.preprocessing import Binarizer
+# Create the object
+>>binarizer = Binarizer(threshold=0.0, copy=False)
+The 2 Key Parameters You Must Know:
+>> threshold: The exact cutoff point.
+   * Any value less than or equal to the threshold becomes 0.
+   * Any value strictly greater than the threshold becomes 1.
+>> copy:
+   * True (Default): Creates a brand new column with the 0s and 1s.
+   * False: Modifies your existing column directly in-place, overwriting the old continuous data.
+>> To apply it: Just like above, you call binarizer.fit_transform(X_train) on your specific column!
+
+## Handling Mixed Variables
+    => A Mixed Variable is a column that contains both numbers and text (categorical data). Because Machine Learning models need clean data types, you must always split a mixed variable into two separate columns (one numerical, one categorical).
+
+There are two common scenarios:
+   * Scenario 1: Data fused in a single cell
+    - The Problem: Numbers and letters are stuck together (e.g., a ticket number like "C85").
+    - The Solution: Use Regular Expressions (RegEx) or string indexing to extract the text into one column and the numbers into another.
+
+💻 The Code:
+> import pandas as pd
+# Extract the categorical part (the letters)
+> df['Cabin_Category'] = df['Cabin'].str.extract('([a-zA-Z]+)') 
+# Extract the numerical part (the numbers)
+> df['Cabin_Number'] = df['Cabin'].str.extract('(\d+)')
+
+  * Scenario 2: Mixed across different rows
+    - The Problem: Some rows have numbers, while other rows have text (e.g., Family size: [2, 4, 'Alone', 1]).
+    - The Solution: Create a numerical column that forces text to NaN, and a categorical column that catches whatever was turned into NaN.
+
+💻 The Code:
+> import pandas as pd
+> import numpy as np
+# 1. Create Numerical Column: Force everything to numbers. Text becomes NaN.
+> df['Family_Num'] = pd.to_numeric(df['Family_Size'], errors='coerce')
+# 2. Create Categorical Column: If the numerical column is NaN, grab the original text. Otherwise, put NaN.
+> df['Family_Cat'] = np.where(df['Family_Num'].isnull(), df['Family_Size'], np.nan)
+
+## Handling Date and Time
+    => Machine learning models cannot understand raw date strings (like "2019-12-12"). You must parse these strings to extract valuable hidden features (like the specific year, the day of the week, or the hour of the day) into separate numerical or categorical columns.
+
+1. The Crucial First Step: Conversion
+    When you load data, dates are usually imported as standard text (object). You must convert them into Pandas datetime objects first to unlock the .dt feature extractor.
+💻 The Code:
+> import pandas as pd
+# Convert string column to proper datetime object
+> df['date_col'] = pd.to_datetime(df['date_col'])
+
+2. Extracting Date Features
+    Once converted, use the .dt accessor to pull out specific date components.
+💻 The Code:
+# Basic Components (returns numbers)
+> df['year'] = df['date_col'].dt.year
+> df['month'] = df['date_col'].dt.month
+> df['day'] = df['date_col'].dt.day
+# Names (returns strings)
+> df['month_name'] = df['date_col'].dt.month_name()  # e.g., 'December'
+> df['day_name'] = df['date_col'].dt.day_name()      # e.g., 'Tuesday'
+# Business Features
+> df['quarter'] = df['date_col'].dt.quarter          # 1, 2, 3, or 4
+> df['week_of_year'] = df['date_col'].dt.isocalendar().week
+# Custom Binary Feature (Is it a weekend?)
+> df['is_weekend'] = np.where(df['date_col'].dt.day_name().isin(['Saturday', 'Sunday']), 1, 0)
+
+3. Extracting Time Features
+    If your dataset contains timestamps (like "10:45:30"), you can extract time components similarly.
+💻 The Code:
+> df['hour'] = df['time_col'].dt.hour
+> df['minute'] = df['time_col'].dt.minute
+> df['second'] = df['time_col'].dt.second
+# Extract just the time (strips away the date)
+> df['just_time'] = df['time_col'].dt.time
+
+4. Calculating Elapsed Time (Time Deltas)
+A powerful feature is calculating the time elapsed between two dates (e.g., Days since joining).
+💻 The Code:
+> import numpy as np
+> from datetime import datetime
+# Calculate raw difference (returns a timedelta object)
+> df['time_elapsed'] = datetime.today() - df['date_col']
+# Convert timedelta into a usable raw number (e.g., total days)
+> df['days_elapsed'] = df['time_elapsed'] / np.timedelta64(1, 'D')
+
+# Note: Swap 'D' for 'M' (months), 'h' (hours),
+
+## Complete Case Analysis (CCA)
+    CCA (or Listwise Deletion) is the simplest way to handle missing data. If a row contains a missing value (NaN) in any column, you completely delete that entire row from your dataset.
+⚠️ The Golden Rules (When to use CCA)
+You should only use this technique if both of the following conditions are true:
+1. MCAR (Missing Completely at Random): There is no hidden pattern to why the data is missing. Dropping the rows won't change the underlying shape or distribution of your data.
+2. The 5% Rule: The column has less than 5% missing data. If you drop rows for a column missing 40% of its data, you are throwing away too much valuable information (in that case, impute the data or drop the column entirely).
+
+💻 The Code (Pandas)
+1. Find columns with less than 5% missing data:
+> import pandas as pd
+# Find the percentage of missing values in each column
+> missing_percentages = df.isnull().mean()
+# Filter for columns that have some missing data, but LESS than 5%
+> cca_columns = missing_percentages[(missing_percentages > 0) & (missing_percentages < 0.05)].index.tolist()
+
+2. Apply CCA (Drop the rows):
+# Drop rows that have NaNs ONLY in our safe 'cca_columns'
+# We use a new dataframe to avoid destroying the original data right away
+> new_df = df.dropna(subset=cca_columns)
+
+3. Verify how much data you lost:
+# Check the shape before and after
+> print("Original shape:", df.shape)
+> print("New shape:", new_df.shape)
+
+# Check how much data remains (e.g., 0.98 means you kept 98% of your rows)
+print("Data retained:", len(new_df) / len(df))
+🚨 Production Warning: While CCA is easy, it is dangerous for deployed models. If your live model receives user input with a missing value, it won't know how to handle it because it was trained on "perfect" CCA data. Imputation (filling in the blanks) is generally preferred for production!
+
+Here is the standard Scikit-Learn code to fill missing values:
+💻 The Code:
+> from sklearn.impute import SimpleImputer
+# 1. For Numerical Data (Fills missing values with the Mean or Median)
+> num_imputer = SimpleImputer(strategy='mean') # can also use strategy='median'
+> X_num_filled = num_imputer.fit_transform(X[['numerical_column']])
+# 2. For Categorical Data (Fills missing text with the Most Frequent category)
+> cat_imputer = SimpleImputer(strategy='most_frequent') 
+> X_cat_filled = cat_imputer.fit_transform(X[['categorical_column']])
+# 3. Filling with a Custom Constant Value (e.g., placing "Missing" in the blank)
+> constant_imputer = SimpleImputer(strategy='constant', fill_value='Missing')
+> X_const_filled = constant_imputer.fit_transform(X[['categorical_column']])
+
+## Handling Missing Univariate Imputation (Numerical)
+    Univariate imputation means filling missing values (NaN) in a column using only the data from that exact same column. In Scikit-Learn, this is handled using the SimpleImputer class.
+
+1. Mean / Median Imputation: Replacing missing values with the average (mean) or the middle value (median) of the column.
+    - Use Mean: When the data has a perfect Normal Distribution.
+    - Use Median: When the data is Skewed or has outliers (the median ignores extreme outliers).
+- When to apply: Only when data is Missing Completely at Random (MCAR) and < 5% of the data is missing.
+- Warning: This artificially shrinks the variance of your data and can distort the distribution shape.
+💻 Scikit-Learn Code:
+> from sklearn.impute import SimpleImputer
+# Create the imputer (swap 'mean' for 'median' if data is skewed)
+> imputer = SimpleImputer(strategy='mean') 
+# Fit and transform the specific column
+> X_train['Age_filled'] = imputer.fit_transform(X_train[['Age']])
+
+2. Arbitrary Value Imputation
+    Replacing missing values with a totally random, extreme number that clearly doesn't belong (e.g., filling missing Ages with 999 or -1).
+Goal: To explicitly flag to the machine learning model that the data was missing, allowing it to find patterns in the missingness.
+When to apply: When data is NOT Missing at Random.
+💻 Scikit-Learn Code:
+> from sklearn.impute import SimpleImputer
+# Set strategy to 'constant' and provide your arbitrary extreme number
+> arb_imputer = SimpleImputer(strategy='constant', fill_value=-999) 
+> X_train['Age_filled'] = arb_imputer.fit_transform(X_train[['Age']])
+
+3. End of Distribution Imputation
+    This is the mathematical version of Arbitrary Value Imputation. Instead of guessing a random extreme number like 999, you calculate the exact extreme "end" of your data's distribution and use that.
+If Normal Distribution: Use Mean + (3 * Standard Deviation)
+If Skewed Distribution: Use the IQR rule: Q3 + (1.5 * IQR)
+When to apply: Same as Arbitrary Value—when data is NOT Missing at Random.
+💻 Scikit-Learn Code:
+(Note: Scikit-Learn does not calculate the "End of Distribution" automatically. You must calculate the value using Pandas first, then feed it into the SimpleImputer as a constant).
+> from sklearn.impute import SimpleImputer
+# 1. Calculate the extreme value using Pandas (Example: Normal Distribution)
+> extreme_value = X_train['Age'].mean() + (3 * X_train['Age'].std())
+# 2. Feed that calculated value into SimpleImputer
+> end_imputer = SimpleImputer(strategy='constant', fill_value=extreme_value)
+> X_train['Age_filled'] = end_imputer.fit_transform(X_train[['Age']])
+
+## Handling Missing Univariate Imputation (Categorical)
+    You cannot calculate the mean or median of text data (like city names or colors). Therefore, to handle missing categorical data (NaN), you primarily use two techniques in Scikit-Learn using the SimpleImputer class.
+
+1. Most Frequent Imputation (Mode)
+    Replacing missing values with the most frequently occurring category (the mode) in that column.
+When to apply: -> Data is Missing Completely at Random (MCAR), -> 5% of the data is missing.
+
+One category must heavily dominate the others (e.g., if "Mumbai" appears 90% of the time, it's safe to use. If it's a 50/50 split with "Delhi", do not use this).
+Warning: It can artificially distort the distribution if too much data is missing.
+
+💻 Scikit-Learn Code:
+> from sklearn.impute import SimpleImputer
+# Create the imputer with the 'most_frequent' strategy
+> mode_imputer = SimpleImputer(strategy='most_frequent') 
+# Fit and transform your categorical column
+> X_train['City_filled'] = mode_imputer.fit_transform(X_train[['City']])
+
+2. Missing Category Imputation (Constant)
+    Instead of guessing the missing value, you replace all NaN values with a brand new categorical label, usually just the word "Missing".
+Goal: To explicitly flag to the machine learning model that the data was missing, allowing it to treat "Missing" as just another category and find patterns.
+When to apply: -> Data is NOT Missing at Random, -> A large percentage of data is missing (e.g., > 10%).
+
+💻 Scikit-Learn Code:
+> from sklearn.impute import SimpleImputer
+# Set strategy to 'constant' and provide your custom fill value
+> missing_imputer = SimpleImputer(strategy='constant', fill_value='Missing') 
+> X_train['City_filled'] = missing_imputer.fit_transform(X_train[['City']])
+
+## Handling Missing Indicator and Random Sample Imputation
+1. Random Sample Imputation
+    Instead of filling missing values with the mean/median, you replace them by randomly picking existing values from the same column.
+- When to apply: When using Linear models (Linear/Logistic Regression) and you want to perfectly preserve the original variance and distribution shape.
+- Pros: Keeps the distribution (PDF) and variance intact.
+- Cons: Disturbs covariance/correlation with other columns. Hard to deploy because the server needs to store the training data to pull random samples from.
+- Scikit-Learn Note: Scikit-Learn does not have a built-in class for this. You must do it manually using Pandas.
+
+💻 Pandas Code:
+# 1. Drop NaNs to create a pool of existing values
+> existing_values = df['Age'].dropna()
+# 2. Extract random samples equal to the number of missing values
+# random_state ensures the same random numbers are picked every time
+> random_samples = existing_values.sample(df['Age'].isnull().sum(), random_state=42)
+# 3. Match the index of the random samples to the missing values' index
+> random_samples.index = df[df['Age'].isnull()].index
+# 4. Fill the missing spots
+> df.loc[df['Age'].isnull(), 'Age'] = random_samples
+
+💡 2. Missing Indicator
+    Instead of just filling the missing data, you create a brand new Boolean column (True/False) that explicitly flags whether a value was missing in the original column.
+- When to apply: When data is NOT Missing at Random. The very fact that the data is missing might be a pattern the model can learn from.
+- Pros: Gives the model extra context, which can sometimes boost accuracy.
+💻 Scikit-Learn Code:
+(Pro-tip: While sklearn has a standalone MissingIndicator class, the easiest way is to just toggle add_indicator=True inside your normal SimpleImputer).
+> from sklearn.impute import SimpleImputer
+# Set add_indicator=True to automatically create the True/False flag column
+> imputer = SimpleImputer(strategy='mean', add_indicator=True)
+# The output will now contain both the imputed column AND the new indicator column
+> X_train_transformed = imputer.fit_transform(X_train[['Age']])
+
+💡 3. Automating Strategy Selection (GridSearchCV)
+    If you aren't sure whether to use 'mean' or 'median' (or 'most_frequent' vs 'constant'), you can force Scikit-Learn to test them all and automatically pick the one that gives the highest accuracy.
+
+💻 Scikit-Learn Code:
+> from sklearn.model_selection import GridSearchCV
+> from sklearn.pipeline import Pipeline
+> from sklearn.impute import SimpleImputer
+> from sklearn.linear_model import LogisticRegression
+# 1. Build a basic pipeline
+> pipe = Pipeline([
+>     ('imputer', SimpleImputer()),
+>     ('clf', LogisticRegression())
+> ])
+# 2. Define the grid of strategies you want to test
+> param_grid = {
+>     'imputer__strategy': ['mean', 'median'] # Tests both mean and median
+> }
+# 3. Run the Grid Search
+> grid = GridSearchCV(pipe, param_grid, cv=5)
+> grid.fit(X_train, y_train)
+# 4. Print the winning strategy!
+> print("Best imputation strategy:", grid.best_params_)
+
+## Multivariate Imputation KNN(K Nearest Neighbors)
+    => Unlike Simple Imputation (which only looks at one column), Multivariate Imputation looks at the relationships across all columns to make an educated guess about a missing value.
+    => The KNN (K-Nearest Neighbors) Imputer treats every row as a coordinate point. To fill a missing value, it finds the $K$ rows that are most "similar" (physically closest) to the row with the missing data, and averages their values to fill the blank.
+    
+⚙️ How it Works
+1. Nan-Euclidean Distance: Standard distance math breaks when data is missing. KNN Imputer uses a special formula that ignores missing columns and applies a weight based on the remaining present features to find the closest neighbors.
+2. The weights Parameter:
+   * uniform (Default): All K neighbors get an equal vote in the final average.
+   * distance: Neighbors that are more similar (closer) are given a mathematically heavier vote. Note: Using 'distance' often yields slightly better accuracy.
+3. Pros & Cons: It is highly accurate, but it is computationally expensive (slow) and hard to deploy (the server has to keep your entire training dataset in memory to compare new user inputs against it).
+c Scikit-Learn Code
+> from sklearn.impute import KNNImputer
+# 1. Create the imputer object
+# n_neighbors: How many similar rows to look at (default is 5)
+# weights: 'uniform' (default) or 'distance'
+> knn_imputer = KNNImputer(n_neighbors=5, weights='distance')
+# 2. Fit and transform your entire dataset (it needs all columns to find similarities)
+# Note: KNN Imputer requires all data to be numerical! (Encode categorical data first)
+> X_train_imputed = knn_imputer.fit_transform(X_train)
+# (Optional) Convert the output NumPy array back to a Pandas DataFrame
+> import pandas as pd
+> X_train_imputed = pd.DataFrame(X_train_imputed, columns=X_train.columns)
+
+## MICE Algorithm (Multivariate Imputation by Chained Equations)
+    What it is: An advanced technique for handling missing data in multivariate datasets by modeling each feature with missing values as a function of other features.
+
+- How it works (Iterative Process):
+    * Initial Imputation: Fills missing values temporarily using a basic method (e.g., mean/median).
+    * Cycle through features: Takes one feature at a time, treats its missing spots as the target, and uses all other features as predictors to build a model (regression or classification).
+    * Refinement: Replaces the temporary missing values with the model's predictions.
+    * Iteration: Repeats this cycle multiple times across all features until the process converges and stable imputed values are reached.
+- Key Scenarios: Best used when missing data depends on other variables (Missing at Random - MAR) and simple techniques like dropping rows or single imputation lead to biased results.
+
+💻 Python Implementation (Scikit-Learn)
+In scikit-learn, MICE is implemented using the IterativeImputer class (available via sklearn.impute).
+
+> import numpy as np
+> from sklearn.experimental import enable_iterative_imputer
+> from sklearn.impute import IterativeImputer
+# Sample dataset with missing values (NaN)
+> X = np.array([
+>     [7, 2, 3],
+>     [4, np.nan, 6],
+>     [10, 5, np.nan],
+>     [2, 6, 1]
+> ])
+# Initialize the Iterative Imputer (MICE)
+> imputer = IterativeImputer(max_iter=10, random_state=42)
+# Fit and transform the dataset
+> X_imputed = imputer.fit_transform(X)
+> print("Imputed Data:")
+> print(X_imputed)
+
+
+
+
+
+
+
+Problem Formation
+        ↓
+Data Representation
+        ↓
+Mean Centering
+        ↓
+Variance
+        ↓
+Covariance
+        ↓
+Covariance Matrix
+        ↓
+Optimization Problem
+        ↓
+Eigenvectors
+        ↓
+Eigenvalues
+        ↓
+Principal Components
+        ↓
+Projection
+        ↓
+Dimensionality Reduction
