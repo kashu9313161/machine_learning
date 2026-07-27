@@ -31,8 +31,8 @@ The key thing the diagram shows — everything inside a circle also belongs to a
 
 ### Types of Machine Learning
 
-📋 Machine Learning CategorizationMachine Learning algorithms can be divided into four distinct categories based on the amount of human supervision they require during training.
-1. Supervised Machine LearningIn Supervised Learning, the training dataset contains both the input features and their corresponding correct output labels. The algorithm figures out the mathematical relationship between them to make predictions on brand-new data.
+📋 Machine Learning Categorization => Machine Learning algorithms can be divided into four distinct categories based on the amount of human supervision they require during training.
+1. Supervised Machine Learning => In Supervised Learning, the training dataset contains both the input features and their corresponding correct output labels. The algorithm figures out the mathematical relationship between them to make predictions on brand-new data.
 ![alt text](image.png)
 ### Core Sub-types:
     - Regression: Used when the target output column is a numerical value.
@@ -40,7 +40,7 @@ The key thing the diagram shows — everything inside a circle also belongs to a
     - Classification: Used when the target output column is a categorical/discrete variable.
         - Example: Predicting whether a student will get placed (Yes or No), or predicting if an incoming email is Spam or Not Spam.
 
-2. Unsupervised Machine LearningIn Unsupervised Learning, the training dataset contains only input data with absolutely no output labels or target answers. The algorithm maps out the data structure on its own to find hidden patterns or groupings.
+2. Unsupervised Machine Learning => In Unsupervised Learning, the training dataset contains only input data with absolutely no output labels or target answers. The algorithm maps out the data structure on its own to find hidden patterns or groupings.
 ### Core Sub-types:
     - Clustering: Automatically grouping similar data points together.
         - Example: An e-commerce platform dividing its user base into distinct customer profile segments based on buying behaviors.
